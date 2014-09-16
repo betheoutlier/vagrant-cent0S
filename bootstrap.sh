@@ -21,58 +21,72 @@ ensureFilePresentMd5 () {
 }
 
 provision() {
+  
+  #Make CentOS confirm with some of the work we use elsewhere
+  wget http://packages.sw.be/rpmforge-release/rpmforge-release-0.5.2-2.el5.rf.x86_64.rpm
+  sudo rpm -i rpmforge-release-0.5.2-2.el5.rf.x86_64.rpm
+  sudo yum install -y apt
+  
+  #install nano
+  sudo yum install -y nano
+ 
   #Apache
   apt-get update
-  apt-get install -y apache2
-  rm -rf /var/www
-  ln -fs /vagrant /var/www
-
+  sudo yum install -y httpd
+  
+#TO-DO Figure out what PHP modules exist
   # Apache conf overrides
-  ensureFilePresentMd5 /vagrant/projectProvision/apache2.conf /etc/apache2/apache2.conf "custom httpd settings"
-  ensureFilePresentMd5 /vagrant/projectProvision/envvars /etc/apache2/envvars "custom httpd settings"
-
+  ensureFilePresentMd5 /vagrant/projectProvision/httpd.conf /etc/httpd/httpd.conf "custom httpd settings"
+  
   #MySQL
-  apt-get install debconf-utils -y
-  #One of these pairs worked. All three pairs are not needed. Figure out which one works and remove the others
-  debconf-set-selections <<< "mysql-server-5.5 mysql-server-5.5/root_password password pass"
-  debconf-set-selections <<< "mysql-server-5.5 mysql-server-5.5/root_password_again password pass"
-  debconf-set-selections <<< "mysql-server mysql-server/root_password password pass"
-  debconf-set-selections <<< "mysql-server mysql-server/root_password_again password pass"
-  debconf-set-selections <<< "mysql-server mysql-server-5.5/root_password password pass"
-  debconf-set-selections <<< "mysql-server mysql-server-5.5/root_password_again password pass"
-  sudo apt-get install -y mysql-server-5.5 libapache2-mod-auth-mysql
-
+  sudo yum install -y mysql-server
+#TO-DO Figure out what PHP modules exist
+  # MySQL conf overrides
+  ensureFilePresentMd5 /vagrant/projectProvision/my.cnf /etc/my.cnf "custom mysql settings"
+  sudo /etc/init.d/mysqld start
+  
   #PHP
-  apt-get install -y php5 libapache2-mod-php5 php5-mcrypt
-  apt-get install -y php5-curl
-  apt-get install -y php5-gd
-  apt-get install -y php5-mysql
-  apt-get install -y php5-xmlrpc
-  apt-get install -y php5-tidy
-  #apt-get install php5-sqlite
-  apt-get install -y php5-mcrypt
-  apt-get install -y php5-xdebug
-  apt-get install -y php5-xhprof
-  apt-get install -y php5-json
+  #We need to install these to get to 5.3.*
+  sudo rpm -Uvh http://mirror.webtatic.com/yum/centos/5/latest.rpm
+  sudo yum --enablerepo=webtatic install php
+  sudo yum install -y php-mysql
+  
+#TO-DO Figure out what PHP modules exist 
+#   apt-get install -y php5 libapache2-mod-php5 php5-mcrypt
+#   apt-get install -y php5-curl
+#   apt-get install -y php5-gd
+#   apt-get install -y php5-mysql
+#   apt-get install -y php5-xmlrpc
+#   apt-get install -y php5-tidy
+#   apt-get install -y php5-mcrypt
+#   apt-get install -y php5-xdebug
+#   apt-get install -y php5-xhprof
+#   apt-get install -y php5-json
 
+#TO-DO Figure out what PHP modules exist
   # PHP conf overrides
-  ensureFilePresentMd5 /vagrant/projectProvision/php.ini /etc/php5/apache2/php.ini "custom php settings"
+  ensureFilePresentMd5 /vagrant/projectProvision/php.ini /etc/php.ini "custom php settings"
 
-  #restart Apache/PHP
-  echo "Restarting Apache/PHP..."; sudo service apache2 restart; echo "...done";
-
+  
   #GIT
-  sudo apt-get install -y git
+  sudo yum install -y git
 
   #Drush
-  sudo apt-get install -y php-pear
+  sudo yum install -y php-pear
   sudo pear channel-discover pear.drush.org
   sudo pear install drush/drush
-  sudo drush version
+#sudo drush version
 
   #Fixes Permissions Issue
+  sudo rm -Rf /var/www
+  sudo ln -fs /vagrant /var/www
+  sudo chown -Rf vagrant:vagrant /var/www/
   sudo chmod 0755 /var/www/html/
   sudo chmod 0755 /vagrant/html/
+  
+  #restart Apache/PHP
+  echo "Restarting Apache/PHP..."; sudo /etc/init.d/httpd restart; echo "...done";
+  
 }
 
 provision

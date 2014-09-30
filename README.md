@@ -14,6 +14,6 @@ I simply added basic provisioning for:
 
 This is meant for local and dev use only. This is not a production server. 
 
-MySQL Root Password: pass
+MySQL Root Password is BLANK
 
 

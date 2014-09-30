@@ -46,22 +46,27 @@ provision() {
   sudo /etc/init.d/mysqld start
   
   #PHP
+  #First remove old versions
+  sudo yum remove -y php-pear-1.4.9-8.el5
   #We need to install these to get to 5.3.*
-  sudo rpm -Uvh http://mirror.webtatic.com/yum/centos/5/latest.rpm
-  sudo yum --enablerepo=webtatic install php
-  sudo yum install -y php-mysql
-  
-#TO-DO Figure out what PHP modules exist 
-#   apt-get install -y php5 libapache2-mod-php5 php5-mcrypt
-#   apt-get install -y php5-curl
-#   apt-get install -y php5-gd
-#   apt-get install -y php5-mysql
-#   apt-get install -y php5-xmlrpc
-#   apt-get install -y php5-tidy
-#   apt-get install -y php5-mcrypt
-#   apt-get install -y php5-xdebug
-#   apt-get install -y php5-xhprof
-#   apt-get install -y php5-json
+  sudo rpm -Uvh http://dl.fedoraproject.org/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm
+  sudo yum install -y php53
+  sudo yum install -y php53-mysql
+  sudo yum install -y php53-bcmath
+  sudo yum install -y php53-gd
+  sudo yum install -y php53-imap
+  sudo yum install -y php53-mbstring
+  sudo yum install -y php53-soap
+  sudo yum install -y php53-xml
+  sudo yum install -y php53-mcrypt
+  sudo yum install -y php53-process
+
+  # Apache Extras
+  for file in /vagrant/projectProvision/phpModules/*
+    do
+      filename="$(basename "$file")"
+      ensureFilePresentMd5 "$file" /usr/lib64/php/modules/$filename "php modules"
+  done
 
 #TO-DO Figure out what PHP modules exist
   # PHP conf overrides
@@ -75,7 +80,6 @@ provision() {
   sudo yum install -y php-pear
   sudo pear channel-discover pear.drush.org
   sudo pear install drush/drush
-#sudo drush version
 
   #Fixes Permissions Issue
   sudo rm -Rf /var/www

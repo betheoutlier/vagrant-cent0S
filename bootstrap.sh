@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+#load the variables.
+. /vagrant/vagrant_vars.sh
+
 # Ensures if the specified file is present and the md5 checksum is equal
 ensureFilePresentMd5 () {
     source=$1
@@ -33,18 +36,32 @@ provision() {
   #Apache
   apt-get update
   sudo yum install -y httpd
-  
-#TO-DO Figure out what PHP modules exist
+  #Apache install mod_ssl
+  yum install -y mod_ssl
   # Apache conf overrides
   ensureFilePresentMd5 /vagrant/projectProvision/httpd.conf /etc/httpd/httpd.conf "custom httpd settings"
   
   #MySQL
   sudo yum install -y mysql-server
-#TO-DO Figure out what PHP modules exist
   # MySQL conf overrides
   ensureFilePresentMd5 /vagrant/projectProvision/my.cnf /etc/my.cnf "custom mysql settings"
-  sudo /etc/init.d/mysqld start
-  
+  sudo /etc/init.d/mysqld start  
+  #If the mysqlImport file was configured, set up the db and import it. 
+  if [ -f /vagrant/mysqlImport.sql ]
+    then
+      #create the project's db
+      mysql -u root -h $HostName -Bse "CREATE DATABASE $dbName;"
+      echo "Database Created";
+      #grant access
+      mysql -u root -h $HostName -Bse "GRANT ALL ON ${dbName}.* to $dbUser@'%';"
+      echo "Database: User $dbUser granted access to db and a password was set";
+      #import the db. 
+      mysql -u $dbUser $dbName < /vagrant/mysqlImport.sql
+      echo "Database imported - sql user password was used";
+    else
+      echo "Database Creation Skipped because the mysqlImport.sql file was not configured.";
+  fi
+    
   #PHP
   #First remove old versions
   sudo yum remove -y php-pear-1.4.9-8.el5
@@ -60,18 +77,14 @@ provision() {
   sudo yum install -y php53-xml
   sudo yum install -y php53-mcrypt
   sudo yum install -y php53-process
-
-  # Apache Extras
+  # PHP Modules
   for file in /vagrant/projectProvision/phpModules/*
     do
       filename="$(basename "$file")"
       ensureFilePresentMd5 "$file" /usr/lib64/php/modules/$filename "php modules"
   done
-
-#TO-DO Figure out what PHP modules exist
   # PHP conf overrides
   ensureFilePresentMd5 /vagrant/projectProvision/php.ini /etc/php.ini "custom php settings"
-
   
   #GIT
   sudo yum install -y git

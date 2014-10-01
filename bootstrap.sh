@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 
-#load the variables.
-. /vagrant/vagrant_vars.sh
+#Variables loaded via YAML in the vagrantfile are passed as:
+# $1 = hostname
+# $2 = ip
+# $2 = dbHost
+# $4 = dbName
+# $5 = dbUser
+# $6 = dbPass
 
 # Ensures if the specified file is present and the md5 checksum is equal
 ensureFilePresentMd5 () {
     source=$1
     target=$2
-    if [ "$3" != "" ]; then description=" $3"; else description=" $source"; fi
+    if [ "$4" != "" ]; then description=" $4"; else description=" $source"; fi
  
     md5source=`md5sum ${source} | awk '{ print $1 }'`
     if [ -f "$target" ]; then md5target=`md5sum $target | awk '{ print $1 }'`; else md5target=""; fi
@@ -24,7 +29,6 @@ ensureFilePresentMd5 () {
 }
 
 provision() {
-  
   #Make CentOS confirm with some of the work we use elsewhere
   wget http://packages.sw.be/rpmforge-release/rpmforge-release-0.5.2-2.el5.rf.x86_64.rpm
   sudo rpm -i rpmforge-release-0.5.2-2.el5.rf.x86_64.rpm
@@ -50,14 +54,21 @@ provision() {
   if [ -f /vagrant/mysqlImport.sql ]
     then
       #create the project's db
-      mysql -u root -h $HostName -Bse "CREATE DATABASE $dbName;"
-      echo "Database Created";
+      mysql -u root -h $3 -Bse "CREATE DATABASE $4;"
+      echo "Database $4 Created";
       #grant access
-      mysql -u root -h $HostName -Bse "GRANT ALL ON ${dbName}.* to $dbUser@'%';"
-      echo "Database: User $dbUser granted access to db and a password was set";
-      #import the db. 
-      mysql -u $dbUser $dbName < /vagrant/mysqlImport.sql
-      echo "Database imported - sql user password was used";
+      if [ "$6" = "" ]
+        then
+          mysql -u root -h $3 -Bse "GRANT ALL ON $4.* to $5@'%';"
+          #import the db. 
+          mysql -u $5 $4 < /vagrant/mysqlImport.sql
+          echo "Database imported - sql user password not used";
+        else
+          mysql -u root -h $3 -Bse "GRANT ALL ON $4.* to $5@'%' IDENTIFIED BY '$6';"
+          mysql -u $5 -p$6 $4 < /vagrant/mysqlImport.sql
+          echo "Database imported - sql user password was used";
+      fi
+      echo "Database: User $5 granted access to db and a password was set"; 
     else
       echo "Database Creation Skipped because the mysqlImport.sql file was not configured.";
   fi
@@ -106,4 +117,4 @@ provision() {
   
 }
 
-provision
+provision $1 $2 $3 $4 $5 $6

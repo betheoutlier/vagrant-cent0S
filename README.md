@@ -14,6 +14,8 @@ I simply added basic provisioning for:
 
 This is meant for local and dev use only. This is not a production server. 
 
-MySQL Root Password is BLANK
+Setup and Configuration variables can be set in:
+vagrant_config.yml
 
+Initial MySQL Root Password is BLANK. 
 

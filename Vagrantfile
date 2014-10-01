@@ -3,8 +3,9 @@
 
 #load the variables.
 # VagrantFile
+vagrant_root = File.dirname(__FILE__)
 require 'yaml'
-vconfig = YAML::load_file("vagrant_config.yml")
+vconfig = YAML::load_file("#{vagrant_root}/vagrant_config.yml")
 
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"

@@ -1,0 +1,9 @@
+# Typical Configuration Vars Below
+
+hostname: 'www.example.com'
+ip: '192.168.25.25'
+
+dbHost: "localhost"
+dbName: "project"
+dbUser: "root"
+dbPass: ""

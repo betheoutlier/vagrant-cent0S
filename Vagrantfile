@@ -48,4 +48,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     s.args   = "#{vconfig['hostname']} #{vconfig['ip']} #{vconfig['dbHost']} #{vconfig['dbName']} #{vconfig['dbUser']} #{vconfig['dbPass']}"
   end
 
+  #Apache require's vagrant's folders to be mounted before it can be started, So we will start it here. 
+  config.vm.provision "shell", inline: "sudo /sbin/service httpd start", run: "always"
+  
 end

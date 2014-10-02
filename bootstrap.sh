@@ -96,6 +96,10 @@ provision() {
   done
   # PHP conf overrides
   ensureFilePresentMd5 /vagrant/projectProvision/php.ini /etc/php.ini "custom php settings"
+    
+  #MySQL and httpd don't start on boot by default, Fix this
+  sudo /sbin/chkconfig --level 345 httpd on
+  sudo /sbin/chkconfig --level 345 mysqld on
   
   #GIT
   sudo yum install -y git

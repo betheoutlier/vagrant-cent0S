@@ -38,7 +38,6 @@ provision() {
   sudo yum install -y nano
  
   #Apache
-  apt-get update
   sudo yum install -y httpd
   #Apache install mod_ssl
   yum install -y mod_ssl

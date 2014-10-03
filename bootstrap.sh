@@ -42,7 +42,7 @@ provision() {
   #Apache install mod_ssl
   yum install -y mod_ssl
   # Apache conf overrides
-  ensureFilePresentMd5 /vagrant/projectProvision/httpd.conf /etc/httpd/httpd.conf "custom httpd settings"
+  ensureFilePresentMd5 /vagrant/projectProvision/httpd.conf /etc/httpd/conf/httpd.conf "custom httpd settings"
   
   #MySQL
   sudo yum install -y mysql-server
